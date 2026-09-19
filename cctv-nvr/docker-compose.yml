@@ -1,0 +1,19 @@
+services:
+  frigate:
+    container_name: frigate
+    privileged: true
+    restart: unless-stopped
+    image: ghcr.io/blakeblackshear/frigate:stable
+    shm_size: "128mb"
+    environment:
+      - TZ=${TZ:-Asia/Jakarta}
+      - FRIGATE_CCTV_VERIFICATION_CODE=${CCTV_VERIFICATION_CODE}
+    volumes:
+      - ./config/config.yml:/config/config.yml
+      - ./storage:/media/frigate
+    ports:
+      - "5000:5000"       # Frigate Web UI & Live Dashboard
+      - "1984:1984"       # go2rtc stream debug UI
+      - "8554:8554"       # RTSP restreaming feeds
+      - "8555:8555/tcp"   # WebRTC live streaming (low latency)
+      - "8555:8555/udp"   # WebRTC live streaming (low latency)

@@ -1,0 +1,16 @@
+services:
+  mikhmon:
+    image: animegasan/mikhmon:latest
+    container_name: mikhmon
+    restart: unless-stopped
+    ports:
+      - "9090:80"
+    volumes:
+      - mikhmon_data:/var/www/html/config
+      - mikhmon_template:/var/www/html/template
+    mem_limit: 128m
+    cpus: 0.5
+
+volumes:
+  mikhmon_data:
+  mikhmon_template:

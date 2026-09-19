@@ -1,0 +1,9 @@
+.worktrees/
+*.exe
+.env
+*.env
+cctv-nvr/storage/
+cctv-nvr/.env
+mikhmon/data/
+mikhmon/config/
+node_modules/

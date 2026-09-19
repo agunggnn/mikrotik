@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="-1">
+  <title>Hotspot WiFi - Login</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --accent: #10b981;
+      --accent-badge: #059669;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 420px;
+      padding: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .alert-error {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #0f172a;
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus, input[type="password"]:focus {
+      border-color: var(--primary);
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      border-radius: 8px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-submit:hover {
+      background: var(--primary-hover);
+    }
+    .divider {
+      text-align: center;
+      margin: 24px 0 16px 0;
+      position: relative;
+    }
+    .divider::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 100%;
+      height: 1px;
+      background: var(--border);
+    }
+    .divider span {
+      background: var(--card-bg);
+      padding: 0 12px;
+      position: relative;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .price-card {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      position: relative;
+    }
+    .price-card.popular {
+      border-color: var(--accent);
+    }
+    .popular-tag {
+      position: absolute;
+      top: -8px;
+      right: 8px;
+      background: var(--accent-badge);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .price-card .duration {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .price-card .price {
+      font-size: 16px;
+      font-weight: 700;
+      color: #38bdf8;
+      margin: 4px 0;
+    }
+    .price-card .speed {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .payment-info {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      font-size: 12px;
+      color: #6ee7b7;
+      line-height: 1.5;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>📶 WiFi Voucher</h1>
+      <p>Hubungkan perangkat & masukkan kode voucher</p>
+    </div>
+
+    $(if error)
+    <div class="alert-error">
+      $(error)
+    </div>
+    $(endif)
+
+    <form name="login" action="$(link-login-only)" method="post">
+      <input type="hidden" name="dst" value="$(link-orig)" />
+      <input type="hidden" name="popup" value="true" />
+
+      <div class="form-group">
+        <label for="username">Kode Voucher</label>
+        <input type="text" id="username" name="username" placeholder="Masukkan kode voucher..." required autofocus oninput="syncPass(this.value)">
+      </div>
+
+      <div class="form-group" id="pass-group" style="display: none;">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Password">
+      </div>
+
+      <button type="submit" class="btn-submit">Masuk ke Internet</button>
+    </form>
+
+    <div class="divider">
+      <span>Daftar Paket</span>
+    </div>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="duration">1 Jam</div>
+        <div class="price">Rp 2.000</div>
+        <div class="speed">Speed Up to 2 Mbps</div>
+      </div>
+      <div class="price-card popular">
+        <span class="popular-tag">Populer</span>
+        <div class="duration">3 Jam</div>
+        <div class="price">Rp 3.000</div>
+        <div class="speed">Speed Up to 3 Mbps</div>
+      </div>
+      <div class="price-card">
+        <div class="duration">12 Jam</div>
+        <div class="price">Rp 5.000</div>
+        <div class="speed">Speed Up to 5 Mbps</div>
+      </div>
+      <div class="price-card">
+        <div class="duration">24 Jam</div>
+        <div class="price">Rp 10.000</div>
+        <div class="speed">Speed Up to 10 Mbps</div>
+      </div>
+    </div>
+
+    <div class="payment-info">
+      💳 <strong>Beli Voucher Online:</strong><br>
+      Tersedia pembayaran via <strong>QRIS, DANA, GoPay, ShopeePay</strong>.<br>
+      Hubungi Admin / Kasir untuk mendapatkan voucher.
+    </div>
+
+    <div class="footer">
+      Powered by MikroTik RouterOS & Mikhmon
+    </div>
+  </div>
+
+  <script>
+    function syncPass(val) {
+      document.getElementById('password').value = val;
+    }
+  </script>
+</body>
+</html>

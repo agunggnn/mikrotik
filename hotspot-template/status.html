@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="refresh" content="$(refresh-timeout-secs)">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="expires" content="-1">
+  <title>Hotspot WiFi - Status</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --danger: #ef4444;
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --accent: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 420px;
+      padding: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid #10b981;
+      color: #6ee7b7;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .status-badge .dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+    }
+    .header { text-align: center; margin-bottom: 20px; }
+    .header h1 { font-size: 20px; font-weight: 700; color: var(--text); }
+    .info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 14px; }
+    .info-table tr { border-bottom: 1px solid var(--border); }
+    .info-table td { padding: 10px 0; }
+    .info-table td:first-child { color: var(--text-muted); }
+    .info-table td:last-child { text-align: right; font-weight: 600; color: var(--text); }
+    .btn-logout {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      background: var(--danger);
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="status-badge"><span class="dot"></span> Terhubung ke Internet</div>
+      <h1>$(username)</h1>
+    </div>
+
+    <table class="info-table">
+      <tr>
+        <td>IP Address</td>
+        <td>$(ip)</td>
+      </tr>
+      <tr>
+        <td>MAC Address</td>
+        <td>$(mac)</td>
+      </tr>
+      <tr>
+        <td>Upload / Download</td>
+        <td>$(bytes-in-nice) / $(bytes-out-nice)</td>
+      </tr>
+      <tr>
+        <td>Waktu Terhubung</td>
+        <td>$(uptime)</td>
+      </tr>
+      $(if session-time-left)
+      <tr>
+        <td>Sisa Waktu</td>
+        <td style="color: #38bdf8;">$(session-time-left)</td>
+      </tr>
+      $(endif)
+    </table>
+
+    <form action="$(link-logout)" name="logout" method="post">
+      <button type="submit" class="btn-logout">Putuskan Koneksi (Logout)</button>
+    </form>
+  </div>
+</body>
+</html>

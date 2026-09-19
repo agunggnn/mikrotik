@@ -1,0 +1,5 @@
+# Frigate NVR video storage and recordings
+storage/
+
+# Local environment secrets
+.env
