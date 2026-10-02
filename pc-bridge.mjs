@@ -14,6 +14,13 @@ const OLLAMA_URL = 'http://127.0.0.1:11434/api/generate';
 // Track active child processes for graceful shutdown
 const activeChildren = new Set();
 
+const CAPABILITIES = [
+  { intent: "open_url", description: "Buka website (contoh: youtube, google)" },
+  { intent: "home_assistant", description: "Kendalikan rumah pintar, lampu, kipas, AC" },
+  { intent: "mikrotik_check", description: "Cek kondisi jaringan, CPU Mikrotik, atau telemetri" },
+  { intent: "chat", description: "Pertanyaan umum dan panduan (Fallback)" }
+];
+
 // Simple .env loader to avoid external dependencies
 try {
   const envPath = path.join(process.cwd(), '.env');
@@ -312,7 +319,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // 5. LOCAL OLLAMA CHAT (ZERO API KEY POPUP)
+  // 5. LOCAL OLLAMA CHAT (ZERO API KEY POPUP & DYNAMIC INTENT ROUTER)
   if ((pathname === '/chat' || pathname === '/api/chat') && req.method === 'POST') {
     const body = await parseBody(req);
     const rawPrompt = (body.prompt || '').trim();
@@ -322,8 +329,78 @@ const server = http.createServer(async (req, res) => {
       return sendJSON(res, 400, { ok: false, error: 'Prompt kosong.' });
     }
 
+    // Tahap 1: Dynamic Intent Routing
+    const intentPrompt = `Anda adalah Voice Router. Cocokkan input user ke SALAH SATU intent berikut:
+${CAPABILITIES.map(c => `- ${c.intent}: ${c.description}`).join('\n')}
+Hanya kembalikan JSON murni tanpa markdown backticks.
+{"intent": "...", "target": "parameter", "reply": "respon singkat"}
+
+User: ${rawPrompt}`;
+
+    let intentDecision = { intent: 'chat', target: null, reply: 'AI fallback' };
+    try {
+      const intentRes = await fetch(OLLAMA_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'gemma3:1b-it-qat',
+          prompt: intentPrompt,
+          stream: false,
+          format: 'json'
+        })
+      });
+      if (intentRes.ok) {
+        const intentData = await intentRes.json();
+        const parsed = JSON.parse(intentData.response);
+        if (parsed.intent) intentDecision = parsed;
+      }
+    } catch (e) {
+      console.warn('[PC-BRIDGE] Intent router error, fallback to chat:', e.message);
+    }
+
+    console.log(`[PC-BRIDGE] Intent: ${intentDecision.intent} | Target: ${intentDecision.target}`);
+
+    // Tahap 2: Eksekusi Berdasarkan Intent
+    if (intentDecision.intent === 'open_url' && intentDecision.target) {
+      let targetUrl = intentDecision.target;
+      if (!/^https?:\/\//i.test(targetUrl)) targetUrl = 'https://' + targetUrl;
+      const child = spawn('cmd.exe', ['/c', 'start', '""', targetUrl], { windowsHide: true });
+      activeChildren.add(child);
+      child.on('close', () => activeChildren.delete(child));
+      
+      return sendJSON(res, 200, {
+        ok: true,
+        intent: 'open_url',
+        response: intentDecision.reply || `Membuka URL ${intentDecision.target}`,
+        model: 'gemma3:1b-it-qat'
+      });
+    }
+
+    if (intentDecision.intent === 'home_assistant') {
+      const haState = await getHAState();
+      return sendJSON(res, 200, {
+        ok: true,
+        intent: 'home_assistant',
+        response: `${intentDecision.reply}\n\n[System Info]: ${haState}`,
+        model: 'gemma3:1b-it-qat'
+      });
+    }
+
+    if (intentDecision.intent === 'mikrotik_check') {
+      const mtState = await getMikrotikState();
+      return sendJSON(res, 200, {
+        ok: true,
+        intent: 'mikrotik_check',
+        response: `${intentDecision.reply}\n\n[System Info]: ${mtState}`,
+        model: 'gemma3:1b-it-qat'
+      });
+    }
+
+    // Fallback 'chat': Lakukan standard telemetry injection
+    const [haState, mtState] = await Promise.all([getHAState(), getMikrotikState()]);
+    
     const persona = PERSONA_PROMPTS[mode] || PERSONA_PROMPTS.vibe_coding;
-    const fullPrompt = `${persona}\n\nUser: ${rawPrompt}\nAssistant:`;
+    const fullPrompt = `${persona}\n\n[Live System Telemetry]\n${mtState}\n${haState}\n\nUser: ${rawPrompt}\nAssistant:`;
 
     try {
       const ollamaRes = await fetch(OLLAMA_URL, {
@@ -343,6 +420,7 @@ const server = http.createServer(async (req, res) => {
       const ollamaData = await ollamaRes.json();
       return sendJSON(res, 200, {
         ok: true,
+        intent: 'chat',
         response: (ollamaData.response || '').trim(),
         model: 'gemma3:1b-it-qat'
       });
