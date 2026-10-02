@@ -14,6 +14,30 @@ const OLLAMA_URL = 'http://127.0.0.1:11434/api/generate';
 // Track active child processes for graceful shutdown
 const activeChildren = new Set();
 
+// Simple .env loader to avoid external dependencies
+try {
+  const envPath = path.join(process.cwd(), '.env');
+  if (fs.existsSync(envPath)) {
+    const envFile = fs.readFileSync(envPath, 'utf8');
+    envFile.split('\n').forEach(line => {
+      const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+      if (match) {
+        const key = match[1];
+        let value = (match[2] || '').trim();
+        if (value.startsWith('"') && value.endsWith('"')) value = value.slice(1, -1);
+        if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+        if (!process.env[key]) process.env[key] = value;
+      }
+    });
+  }
+} catch (e) {}
+
+const HA_URL = process.env.HA_URL || 'http://127.0.0.1:8123';
+const HA_TOKEN = process.env.HA_TOKEN || '';
+const MIKROTIK_URL = process.env.MIKROTIK_URL || 'http://192.168.88.1/rest';
+const MIKROTIK_USER = process.env.MIKROTIK_USER || 'admin';
+const MIKROTIK_PASS = process.env.MIKROTIK_PASS || '';
+
 // Helper: send JSON with CORS
 function sendJSON(res, statusCode, data) {
   res.writeHead(statusCode, {
@@ -54,6 +78,41 @@ async function getFirstLine(filePath) {
     return null;
   }
   return null;
+}
+
+// Helper: Fetch Home Assistant state
+async function getHAState() {
+  if (!HA_TOKEN) return "Home Assistant Token is not configured.";
+  try {
+    const res = await fetch(`${HA_URL}/api/states`, {
+      headers: { 'Authorization': `Bearer ${HA_TOKEN}`, 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(3000)
+    });
+    if (!res.ok) return `HA Error: ${res.status}`;
+    const data = await res.json();
+    const importantEntities = data.filter(e => 
+      e.entity_id.startsWith('light.') || e.entity_id.startsWith('switch.') || e.entity_id.startsWith('climate.')
+    ).map(e => `${e.entity_id}: ${e.state}`).join(', ');
+    return `HA State:\n${importantEntities || 'No important entities found.'}`;
+  } catch (err) {
+    return `HA Fetch Error: ${err.message}`;
+  }
+}
+
+// Helper: Fetch Mikrotik telemtry
+async function getMikrotikState() {
+  try {
+    const auth = Buffer.from(`${MIKROTIK_USER}:${MIKROTIK_PASS}`).toString('base64');
+    const res = await fetch(`${MIKROTIK_URL}/system/resource`, {
+      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(3000)
+    });
+    if (!res.ok) return `Mikrotik Error: ${res.status}`;
+    const data = await res.json();
+    return `Mikrotik System: CPU ${data['cpu-load']}%, Free Memory ${(data['free-memory'] / 1024 / 1024).toFixed(1)}MB`;
+  } catch (err) {
+    return `Mikrotik Fetch Error: ${err.message}`;
+  }
 }
 
 // Helper: list AGY sessions
